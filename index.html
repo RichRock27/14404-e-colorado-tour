@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14404 E Colorado Dr Unit 202 | Guided Rental Tour</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2428;
+      --muted: #65717a;
+      --line: #d9dfdf;
+      --paper: #f7f5f0;
+      --panel: #ffffff;
+      --pine: #1f4f46;
+      --clay: #a64f33;
+      --gold: #c99b45;
+      --shadow: 0 18px 60px rgba(28, 34, 36, 0.18);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 63%, rgba(247, 245, 240, 0.96) 100%),
+        var(--paper);
+    }
+
+    .stage {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .photo-frame {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .tour-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.04);
+      transition: opacity 280ms ease, transform 650ms ease;
+      filter: saturate(1.02) contrast(1.02);
+    }
+
+    .tour-photo.is-moving {
+      transform: scale(1.09) translate3d(var(--pan-x, 0), var(--pan-y, 0), 0);
+    }
+
+    .shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.48), rgba(0, 0, 0, 0.05) 43%, rgba(0, 0, 0, 0.24)),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0) 42%);
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: #fff;
+      z-index: 3;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      border-radius: 50%;
+      font-weight: 800;
+    }
+
+    .brand-text {
+      min-width: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 12px;
+    }
+
+    .ghost-button {
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    .hero-copy {
+      position: absolute;
+      left: 30px;
+      bottom: 34px;
+      width: min(620px, calc(100% - 60px));
+      color: #fff;
+      z-index: 3;
+    }
+
+    .room-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(14px);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .room-kicker::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 11ch;
+      font-size: clamp(46px, 7vw, 94px);
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .hero-copy p {
+      margin: 18px 0 0;
+      max-width: 570px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: clamp(17px, 1.8vw, 22px);
+      line-height: 1.45;
+    }
+
+    .tour-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .primary-button,
+    .secondary-button {
+      height: 46px;
+      border-radius: 999px;
+      padding: 0 18px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      font-weight: 800;
+    }
+
+    .primary-button {
+      color: #fff;
+      background: var(--clay);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+    }
+
+    .secondary-button {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.36);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel {
+      position: relative;
+      z-index: 4;
+      min-height: 100vh;
+      height: 100vh;
+      padding: 24px;
+      border-left: 1px solid rgba(31, 36, 40, 0.1);
+      background: rgba(247, 245, 240, 0.96);
+      overflow-y: auto;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .panel-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .unit-pill {
+      flex: 0 0 auto;
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--pine);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .progress {
+      margin: 18px 0 0;
+      height: 8px;
+      border-radius: 999px;
+      background: #e3e2db;
+      overflow: hidden;
+    }
+
+    .progress span {
+      display: block;
+      width: var(--progress, 0%);
+      height: 100%;
+      background: var(--gold);
+      transition: width 240ms ease;
+    }
+
+    .room-list {
+      margin: 20px 0;
+      display: grid;
+      gap: 8px;
+    }
+
+    .room-button {
+      width: 100%;
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      text-align: left;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .room-button:hover,
+    .room-button.is-active {
+      border-color: rgba(31, 79, 70, 0.24);
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(31, 36, 40, 0.08);
+    }
+
+    .room-button img {
+      width: 48px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .room-button strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .room-button span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .detail {
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .detail h3 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+
+    .detail p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .hotspots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .hotspot {
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: #ebe8df;
+      color: #3f464a;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .cta-box {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: var(--radius);
+      color: #fff;
+      background: var(--pine);
+      box-shadow: var(--shadow);
+    }
+
+    .cta-box h3 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+
+    .cta-box p {
+      margin: 10px 0 16px;
+      color: rgba(255, 255, 255, 0.78);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .cta-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .cta-actions a {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 850;
+      font-size: 13px;
+    }
+
+    .cta-actions a:first-child {
+      color: var(--pine);
+      background: #fff;
+    }
+
+    .cta-actions a:last-child {
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.44);
+    }
+
+    .thumb-strip {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      display: none;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px;
+      z-index: 4;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.32);
+      backdrop-filter: blur(14px);
+    }
+
+    .thumb {
+      flex: 0 0 auto;
+      width: 58px;
+      height: 44px;
+      padding: 0;
+      border: 2px solid transparent;
+      border-radius: 999px;
+      overflow: hidden;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .thumb.is-active {
+      border-color: #fff;
+    }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        display: block;
+        height: auto;
+      }
+
+      .stage {
+        min-height: 72vh;
+      }
+
+      .panel {
+        min-height: 0;
+        height: auto;
+        border-left: 0;
+      }
+
+      .hero-copy {
+        bottom: 98px;
+      }
+
+      .thumb-strip {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        left: 14px;
+        right: 14px;
+        top: 14px;
+      }
+
+      .ghost-button {
+        width: 38px;
+        padding: 0;
+        font-size: 0;
+      }
+
+      .ghost-button::before {
+        content: "i";
+        font-size: 15px;
+        font-weight: 900;
+      }
+
+      .hero-copy {
+        left: 16px;
+        right: 16px;
+        width: auto;
+        bottom: 88px;
+      }
+
+      h1 {
+        font-size: 45px;
+      }
+
+      .hero-copy p {
+        font-size: 16px;
+      }
+
+      .tour-controls {
+        gap: 8px;
+      }
+
+      .primary-button,
+      .secondary-button {
+        height: 42px;
+        padding: 0 14px;
+        font-size: 13px;
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .cta-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="stage" aria-label="Guided property photo tour">
+      <div class="photo-frame">
+        <img class="tour-photo" id="tourPhoto" src="assets/IMG_5028.jpeg" alt="Exterior of 14404 E Colorado Drive">
+      </div>
+      <div class="shade"></div>
+
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark">EC</div>
+          <div class="brand-text">
+            <p class="brand-title">14404 E Colorado Dr, Unit 202</p>
+            <p class="brand-subtitle">Aurora, CO guided rental walkthrough</p>
+          </div>
+        </div>
+        <button class="ghost-button" type="button" id="overviewButton">Tour overview</button>
+      </header>
+
+      <div class="hero-copy">
+        <div class="room-kicker" id="roomKicker">Exterior</div>
+        <h1 id="roomTitle">Start outside</h1>
+        <p id="roomLead">Begin with the building approach, then move inside through a guided rental tour that highlights the updated finishes, natural light, storage, laundry, and balcony.</p>
+        <div class="tour-controls">
+          <button class="primary-button" type="button" id="nextButton">Next room</button>
+          <button class="secondary-button" type="button" id="prevButton">Previous</button>
+        </div>
+      </div>
+
+      <div class="thumb-strip" id="thumbStrip" aria-label="Tour photo navigation"></div>
+    </section>
+
+    <aside class="panel" aria-label="Tour details">
+      <div class="panel-header">
+        <div>
+          <h2>Interactive Rental Tour</h2>
+          <p>A fast example of how ordinary listing photos can become a guided walkthrough.</p>
+        </div>
+        <div class="unit-pill">1 Bed / 1 Bath</div>
+      </div>
+
+      <div class="progress" aria-label="Tour progress"><span id="progressBar"></span></div>
+
+      <nav class="room-list" id="roomList" aria-label="Rooms"></nav>
+
+      <section class="detail">
+        <h3 id="detailTitle">Exterior</h3>
+        <p id="detailBody">Start with a clear view of the building and upstairs balcony so renters understand the approach and setting before stepping inside.</p>
+        <div class="hotspots" id="hotspots"></div>
+      </section>
+
+      <section class="cta-box">
+        <h3>Ready to see it in person?</h3>
+        <p>Schedule a showing or request rental details for this bright Aurora condo with hardwood floors, stainless appliances, in-unit laundry, and a covered balcony.</p>
+        <div class="cta-actions">
+          <a href="mailto:leasing@example.com?subject=Showing request for 14404 E Colorado Dr Unit 202">Schedule Showing</a>
+          <a href="tel:+13035550100">Call Leasing</a>
+        </div>
+      </section>
+    </aside>
+  </main>
+
+  <script>
+    const tour = [
+      {
+        room: "Exterior",
+        title: "Start outside",
+        image: "assets/IMG_5028.jpeg",
+        alt: "Exterior building view with walkway and upper balcony",
+        lead: "Begin with the building approach, then move inside through a guided rental tour that highlights the updated finishes, natural light, storage, laundry, and balcony.",
+        body: "Start with a clear view of the building and upstairs balcony so renters understand the approach and setting before stepping inside.",
+        tags: ["Second-floor setting", "Covered balcony", "Community walkway"],
+        panX: "-1.6%",
+        panY: "0.4%"
+      },
+      {
+        room: "Living Room",
+        title: "Open living area",
+        image: "assets/IMG_5001.jpeg",
+        alt: "Living room with hardwood floors, stone fireplace, and balcony doors",
+        lead: "The main living area opens with rich hardwood floors, a stone fireplace, and direct sightlines to the covered balcony.",
+        body: "This is the strongest first interior moment: open floor space, warm flooring, natural light, and a fireplace that gives the room a clear focal point.",
+        tags: ["Hardwood floors", "Stone fireplace", "Balcony access"],
+        panX: "1.2%",
+        panY: "-0.4%"
+      },
+      {
+        room: "Kitchen",
+        title: "Updated kitchen",
+        image: "assets/IMG_5014.jpeg",
+        alt: "Kitchen with stainless appliances and white cabinetry",
+        lead: "The kitchen keeps things bright and practical with white cabinetry, stainless appliances, patterned backsplash, and usable counter space.",
+        body: "This stop works well as a renter decision point because it shows the stainless refrigerator, range, microwave, dishwasher, cabinetry, and backsplash in one view.",
+        tags: ["Stainless appliances", "White cabinetry", "Dishwasher"],
+        panX: "-1.4%",
+        panY: "0.2%"
+      },
+      {
+        room: "Balcony",
+        title: "Covered balcony",
+        image: "assets/IMG_5026.jpeg",
+        alt: "Covered balcony with railing and tree view",
+        lead: "A covered balcony extends the living space outdoors, giving renters a spot for coffee, plants, or fresh air.",
+        body: "The balcony view adds lifestyle context and makes the unit feel less like a flat photo gallery and more like a place someone can picture using.",
+        tags: ["Covered outdoor space", "Tree view", "Off living room"],
+        panX: "0.8%",
+        panY: "-1%"
+      },
+      {
+        room: "Bedroom",
+        title: "Bright bedroom",
+        image: "assets/IMG_5005.jpeg",
+        alt: "Bedroom with hardwood flooring and window",
+        lead: "The bedroom continues the hardwood flooring and offers a clean, flexible layout with natural light from two window areas.",
+        body: "The room feels simple and easy to furnish. The tour can also point renters toward the closet from this stop.",
+        tags: ["Hardwood floors", "Natural light", "Flexible layout"],
+        panX: "-0.8%",
+        panY: "0.2%"
+      },
+      {
+        room: "Walk-in Closet",
+        title: "Roomy storage",
+        image: "assets/IMG_5006.jpeg",
+        alt: "Walk-in closet with shelves and hanging rods",
+        lead: "The walk-in closet gives the rental a practical advantage, with enough depth for clothing, bins, and seasonal storage.",
+        body: "Storage is a major rental selling point. Showing it as its own tour stop makes the unit feel more functional and complete.",
+        tags: ["Walk-in closet", "Shelf storage", "Hanging space"],
+        panX: "0.7%",
+        panY: "-0.2%"
+      },
+      {
+        room: "Laundry",
+        title: "In-unit laundry",
+        image: "assets/IMG_5011.jpeg",
+        alt: "Washer and dryer in laundry closet",
+        lead: "In-unit washer and dryer are already in place, adding everyday convenience renters notice immediately.",
+        body: "This is a high-value rental feature, so the tour gives it its own clear moment instead of burying it in the photo carousel.",
+        tags: ["Washer included", "Dryer included", "Laundry closet"],
+        panX: "-0.8%",
+        panY: "0.5%"
+      },
+      {
+        room: "Bathroom",
+        title: "Updated bath",
+        image: "assets/IMG_5022.jpeg",
+        alt: "Bathroom with tiled shower, vanity, mirror, and toilet",
+        lead: "The bathroom features a tiled tub and shower surround, updated vanity, large mirror, and a clean neutral palette.",
+        body: "This view highlights the upgraded tile work and vanity while keeping the renter oriented to the bathroom layout.",
+        tags: ["Tile surround", "Updated vanity", "Large mirror"],
+        panX: "1.1%",
+        panY: "-0.5%"
+      }
+    ];
+
+    const photo = document.getElementById("tourPhoto");
+    const roomKicker = document.getElementById("roomKicker");
+    const roomTitle = document.getElementById("roomTitle");
+    const roomLead = document.getElementById("roomLead");
+    const detailTitle = document.getElementById("detailTitle");
+    const detailBody = document.getElementById("detailBody");
+    const hotspots = document.getElementById("hotspots");
+    const roomList = document.getElementById("roomList");
+    const thumbStrip = document.getElementById("thumbStrip");
+    const progressBar = document.getElementById("progressBar");
+    const nextButton = document.getElementById("nextButton");
+    const prevButton = document.getElementById("prevButton");
+    const overviewButton = document.getElementById("overviewButton");
+
+    let activeIndex = 0;
+
+    function renderNav() {
+      roomList.innerHTML = "";
+      thumbStrip.innerHTML = "";
+
+      tour.forEach((stop, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `room-button${index === activeIndex ? " is-active" : ""}`;
+        button.innerHTML = `
+          <img src="${stop.image}" alt="">
+          <span>
+            <strong>${stop.room}</strong>
+            <span>${stop.tags.slice(0, 2).join(" • ")}</span>
+          </span>
+        `;
+        button.addEventListener("click", () => setActive(index));
+        roomList.appendChild(button);
+
+        const thumb = document.createElement("button");
+        thumb.type = "button";
+        thumb.className = `thumb${index === activeIndex ? " is-active" : ""}`;
+        thumb.setAttribute("aria-label", `Go to ${stop.room}`);
+        thumb.innerHTML = `<img src="${stop.image}" alt="">`;
+        thumb.addEventListener("click", () => setActive(index));
+        thumbStrip.appendChild(thumb);
+      });
+    }
+
+    function setActive(index) {
+      activeIndex = (index + tour.length) % tour.length;
+      const stop = tour[activeIndex];
+
+      photo.classList.remove("is-moving");
+      photo.style.opacity = "0";
+
+      window.setTimeout(() => {
+        photo.src = stop.image;
+        photo.alt = stop.alt;
+        photo.style.setProperty("--pan-x", stop.panX);
+        photo.style.setProperty("--pan-y", stop.panY);
+        photo.style.opacity = "1";
+        photo.classList.add("is-moving");
+      }, 120);
+
+      roomKicker.textContent = stop.room;
+      roomTitle.textContent = stop.title;
+      roomLead.textContent = stop.lead;
+      detailTitle.textContent = stop.room;
+      detailBody.textContent = stop.body;
+
+      hotspots.innerHTML = "";
+      stop.tags.forEach((tag) => {
+        const item = document.createElement("span");
+        item.className = "hotspot";
+        item.textContent = tag;
+        hotspots.appendChild(item);
+      });
+
+      progressBar.style.setProperty("--progress", `${((activeIndex + 1) / tour.length) * 100}%`);
+      nextButton.textContent = activeIndex === tour.length - 1 ? "Restart tour" : "Next room";
+      prevButton.disabled = false;
+      renderNav();
+    }
+
+    nextButton.addEventListener("click", () => setActive(activeIndex + 1));
+    prevButton.addEventListener("click", () => setActive(activeIndex - 1));
+    overviewButton.addEventListener("click", () => {
+      document.querySelector(".panel").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight") setActive(activeIndex + 1);
+      if (event.key === "ArrowLeft") setActive(activeIndex - 1);
+    });
+
+    setActive(0);
+  </script>
+</body>
+</html>
